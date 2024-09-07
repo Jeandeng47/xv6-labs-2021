@@ -289,6 +289,9 @@ fork(void)
   }
   np->sz = p->sz;
 
+  // copy track mask of parent to child.
+  np->trace_mask = p->trace_mask;
+
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
@@ -653,4 +656,17 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+// return the number of processes that are in active state
+int
+procnum() {
+  int i;
+  int num = 0;
+  for (i = 0; i < NPROC; i++) {
+    if (proc[i].state != UNUSED) {
+      num++;
+    }
+  }
+  return num;
 }

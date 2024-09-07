@@ -6,6 +6,11 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
+
+// functions for sysinfo
+uint64 freememsize(void); // Function to calculate the free memory size
+int procnum(void);        // Function to count the number of active processes
 
 uint64
 sys_exit(void)
@@ -94,4 +99,38 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64
+sys_trace(void) 
+{
+  int mask;
+  // retrieve the bit mask arg passed from user space
+  // trace(MASK): get 0th arg as int and store it in mask
+  if (argint(0, &mask) < 0) {
+    // if retrieval fails
+    return -1;
+  }
+  myproc()->trace_mask = mask;
+  return 0; // return success
+}
+
+uint64 
+sys_sysinfo(void)
+{
+  // retrieve the address of sysinfo struct from user space
+  uint64 p;
+  if (argaddr(0, &p) < 0)
+  {
+    return -1;
+  }
+  struct sysinfo sinfo;
+  sinfo.freemem = freememsize();
+  sinfo.nproc = procnum();
+  // copy out the sysinfo struct from kernel space to user space
+  if (copyout(myproc()->pagetable, p, (char *)&sinfo, sizeof(sinfo)))
+  {
+    return -1;
+  }
+  return 0;
 }
