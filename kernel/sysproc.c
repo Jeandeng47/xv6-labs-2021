@@ -75,12 +75,51 @@ sys_sleep(void)
   return 0;
 }
 
-
 #ifdef LAB_PGTBL
 int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  // int pgaccess(void *base, int len, void *mask)
+  // 1st arg: va of the first user page
+  // 2nd arg: takes number of page to check
+  // 3rd arg: user address as buffer to store results into the mask
+  uint64 va;
+  int pagenum;
+  uint64 uaddr;
+
+  // check arguments
+  if (argaddr(0, &va) < 0) {
+    return -1;
+  }
+  if (argint(1, &pagenum) < 0) {
+    return -1;
+  }
+  if(argaddr(2, &uaddr) < 0) {
+    return -1;
+  }
+
+  uint64 mask = 0;
+  uint64 complement = ~PTE_A;
+
+  // iterate through the user pages
+  struct proc *p = myproc();
+  pagetable_t pagetable = p->pagetable;
+  // return the pa of the pte corresponding to the va
+  for (int i = 0; i < pagenum; i++) {
+    pte_t *pte = walk(pagetable, va + i*PGSIZE, 0);
+    if(*pte & PTE_A) {
+      mask |= (1 << i); // set the ith bit to one
+      *pte &= complement;
+    }
+  }
+
+  // copy the result back to the user space
+  // copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
+  if (copyout(pagetable, uaddr, (char *)&mask, sizeof(mask)) < 0)
+  {
+    return -1;
+  }
   return 0;
 }
 #endif

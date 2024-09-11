@@ -80,20 +80,27 @@ kvminithart()
 pte_t *
 walk(pagetable_t pagetable, uint64 va, int alloc)
 {
+  // if the va exceeds the max valid VA, panics
   if(va >= MAXVA)
     panic("walk");
 
+  // loop through PT level (L2->L1->L0)
   for(int level = 2; level > 0; level--) {
+    // extracts the 9 bits of the va for that level
     pte_t *pte = &pagetable[PX(level, va)];
+    // if current pte is valid, it points to next-level of PT
     if(*pte & PTE_V) {
+      // set the PT to physical address of next level PT
       pagetable = (pagetable_t)PTE2PA(*pte);
     } else {
+      // if PTE is not valid (PT at this level not created)
       if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
         return 0;
-      memset(pagetable, 0, PGSIZE);
-      *pte = PA2PTE(pagetable) | PTE_V;
+      memset(pagetable, 0, PGSIZE); // initialize the new PT
+      *pte = PA2PTE(pagetable) | PTE_V; // set PTE to points to the new PT
     }
   }
+  // return PTE for the leaf level
   return &pagetable[PX(0, va)];
 }
 
@@ -432,3 +439,45 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+void
+_vmprint_helper(pagetable_t pagetable, int recurlevel) {
+  // each pagetable has 512 PTEs
+  for (int i = 0; i < 512; i++) {
+    pte_t pte = pagetable[i];
+
+    if((pte & PTE_V) && (pte & (PTE_R | PTE_W | PTE_X)) == 0) {
+      // if the pte is valid (in PT) and no permission bits set:
+      // the pte contains the address of next level PT
+
+      uint64 child = PTE2PA(pte);
+      // print indentation
+      for (int j = 0; j <= recurlevel; j++)
+      {
+        printf("..");
+        if ((j + 1) <= recurlevel)
+        {
+          printf(" ");
+        }
+      }
+      // print info of pte
+      printf("%d: pte %p pa %p\n", i, pte, child);
+
+      // recurse into next level
+      _vmprint_helper((pagetable_t) child, recurlevel + 1); 
+    } else if (pte & PTE_V) {
+      // if the pte is a leaf page
+      uint64 child = PTE2PA(pte);
+      // print info of pte
+      printf(".. .. ..%d: pte %p pa %p\n", i, pte, child);
+    }
+  }
+}
+
+// print the content of the page table
+void
+vmprint(pagetable_t pagetable) {
+  printf("page table %p\n", pagetable); // here is the VA
+  _vmprint_helper(pagetable, 0);
+}
+
