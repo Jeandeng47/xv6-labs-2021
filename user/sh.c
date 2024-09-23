@@ -101,16 +101,18 @@ runcmd(struct cmd *cmd)
     pcmd = (struct pipecmd*)cmd;
     if(pipe(p) < 0)
       panic("pipe");
+    // child process to run the left cmd
     if(fork1() == 0){
-      close(1);
-      dup(p[1]);
+      close(1);  // close stdout
+      dup(p[1]); // duplicate stdout
       close(p[0]);
       close(p[1]);
       runcmd(pcmd->left);
     }
+    // child process to run the right cmd
     if(fork1() == 0){
-      close(0);
-      dup(p[0]);
+      close(0);  // close stdin
+      dup(p[0]); // duplicate stdin
       close(p[0]);
       close(p[1]);
       runcmd(pcmd->right);

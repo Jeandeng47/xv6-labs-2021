@@ -105,15 +105,17 @@ sys_pgaccess(void)
   // iterate through the user pages
   struct proc *p = myproc();
   pagetable_t pagetable = p->pagetable;
-  // return the pa of the pte corresponding to the va
+  // each iteration: get one page in VA starting from va
   for (int i = 0; i < pagenum; i++) {
+    // start addr of ith page: va + i*4KB
     pte_t *pte = walk(pagetable, va + i*PGSIZE, 0);
     if(*pte & PTE_A) {
-      mask |= (1 << i); // set the ith bit to one
+      // if the ith page is accessed, set the ith bit in mask to one
+      mask |= (1 << i); 
       *pte &= complement;
     }
   }
-
+  
   // copy the result back to the user space
   // copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
   if (copyout(pagetable, uaddr, (char *)&mask, sizeof(mask)) < 0)
