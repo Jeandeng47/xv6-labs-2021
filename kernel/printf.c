@@ -25,6 +25,22 @@ static struct {
 
 static char digits[] = "0123456789abcdef";
 
+void backtrace(void)
+{
+  // read current frame pointer
+  uint64 fp, ra;
+  printf("backtrace:\n");
+  fp = r_fp();
+  uint64 top = PGROUNDUP(fp);
+  uint64 bottom = PGROUNDDOWN(fp);
+  while ((fp< top) && (fp> bottom))
+  {
+    ra = *(uint64 *)(fp - 8);
+    printf("%p\n", ra);        // print return address of the function
+    fp = *(uint64 *)(fp - 16); // update to previous frame pointer
+  }
+}
+
 static void
 printint(int xx, int base, int sign)
 {
@@ -121,6 +137,7 @@ panic(char *s)
   printf("panic: ");
   printf(s);
   printf("\n");
+  backtrace();
   panicked = 1; // freeze uart output from other CPUs
   for(;;)
     ;
