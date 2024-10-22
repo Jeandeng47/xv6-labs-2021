@@ -105,10 +105,11 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  // save in sys_sigalarm
+
+  // alarm
   int interval;                       // alarm interval
   void (*handler)();                  // pointer to the handler function
-  int passedticks;                    // number of ticks have passed since last call to handler
-  int is_handler;                     // when handler enters, it should be 1; otherwise it should be 0
-  struct trapframe *alarmtrapframe;    // trapframe to save alarm related info
+  int left_ticks;                    // number of ticks have passed since last call to handler
+  int in_handler;                     // when handler enters, it should be 1; otherwise it should be 0
+  struct trapframe *alarm_trapframe;    // trapframe to save alarm related info
 };

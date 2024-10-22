@@ -128,7 +128,7 @@ found:
   }
 
   // Allocate another trapframe page to save alarm related info
-  if ((p->alarmtrapframe = (struct trapframe *)kalloc()) == 0)
+  if ((p->alarm_trapframe = (struct trapframe *)kalloc()) == 0)
   {
     freeproc(p);
     release(&p->lock);
@@ -164,9 +164,9 @@ freeproc(struct proc *p)
   p->trapframe = 0;
 
   // free alram trapframe
-  if (p->alarmtrapframe)
-    kfree((void *)p->alarmtrapframe);
-  p->alarmtrapframe = 0;
+  if (p->alarm_trapframe)
+    kfree((void *)p->alarm_trapframe);
+  p->alarm_trapframe = 0;
 
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);

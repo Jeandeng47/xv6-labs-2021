@@ -78,11 +78,23 @@ usertrap(void)
 
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2) {
-  
-  
-  }
+    if(p->in_handler == 0 && p->interval != 0) {
+      p->left_ticks--;
+      // execute handler after the
+      if (p->left_ticks == 0)
+      {
+        // save trapframe:  memmove(void *dst, const void *src, uint n)
+        memmove(p->alarm_trapframe, p->trapframe, sizeof(struct trapframe));
+        // set PC of the process
+        p->trapframe->epc = (uint64) p->handler;
+        // reset timer
+        p->left_ticks = p->interval;
+        // step into handler
+        p->in_handler = 1;
+      }
+    }
     yield();
-
+  }
   usertrapret();
 }
 
