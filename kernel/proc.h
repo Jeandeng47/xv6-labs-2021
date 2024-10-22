@@ -109,7 +109,39 @@ struct proc {
   // alarm
   int interval;                       // alarm interval
   void (*handler)();                  // pointer to the handler function
-  int left_ticks;                    // number of ticks have passed since last call to handler
+  int passed_ticks;                    // number of ticks have passed since last call to handler
   int in_handler;                     // when handler enters, it should be 1; otherwise it should be 0
-  struct trapframe *alarm_trapframe;    // trapframe to save alarm related info
+  // registers to be saved or restored
+  uint64 saved_epc;
+  uint64 saved_ra;
+  uint64 saved_sp;
+  uint64 saved_gp;
+  uint64 saved_tp;
+  uint64 saved_t0;
+  uint64 saved_t1;
+  uint64 saved_t2;
+  uint64 saved_s0;
+  uint64 saved_s1;
+  uint64 saved_s2;
+  uint64 saved_s3;
+  uint64 saved_s4;
+  uint64 saved_s5;
+  uint64 saved_s6;
+  uint64 saved_s7;
+  uint64 saved_s8;
+  uint64 saved_s9;
+  uint64 saved_s10;
+  uint64 saved_s11;
+  uint64 saved_a0;
+  uint64 saved_a1;
+  uint64 saved_a2;
+  uint64 saved_a3;
+  uint64 saved_a4;
+  uint64 saved_a5;
+  uint64 saved_a6;
+  uint64 saved_a7;
+  uint64 saved_t3;
+  uint64 saved_t4;
+  uint64 saved_t5;
+  uint64 saved_t6;
 };
