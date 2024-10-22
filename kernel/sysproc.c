@@ -7,8 +7,37 @@
 #include "spinlock.h"
 #include "proc.h"
 
-uint64
-sys_exit(void)
+// int sigalarm(int ticks, void (*handler)());
+uint64 sys_sigalarm(void) {
+  int n;
+  uint64 faddr;
+  // read interval
+  if(argint(0, &(myproc()->interval)) < 0) {
+    return -1;
+  }
+  // read handler function
+  if(argaddr(1, (uint64 *)&(myproc()->handler)) < 0) {
+    return -1;
+  }
+  // check if re-enter the handler function
+  if(myproc()->is_handler == 1) {
+    return 0;
+  }
+  myproc()->passedticks = myproc()->interval;
+
+  return 0;
+}
+
+uint64 sys_sigreturn(void) {
+  if (myproc()->is_handler == 1) {
+    // copy info from trapframe to alarm trapframe
+    memmove(myproc()->alarmtrapframe, myproc()->trapframe, sizeof(struct trapframe));
+    myproc()->is_handler = 0;
+  }
+  return 0;
+}
+
+uint64 sys_exit(void)
 {
   int n;
   if(argint(0, &n) < 0)

@@ -1,0 +1,12 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#0C341F",
+        "titleBar.activeBackground": "#11492C",
+        "titleBar.activeForeground": "#F4FDF8"
+    },
+    "files.associations": {
+        "cstdio": "c",
+        "*.def": "c",
+        "*.tcc": "c"
+    }
+}
